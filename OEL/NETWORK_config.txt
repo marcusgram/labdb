@@ -1,0 +1,90 @@
+
+
+https://docs.oracle.com/cd/E52668_01/E54669/html/ol7-s6-netconf.html
+
+
+# 11.4 Command-line Network Configuration Interfaces
+
+If the NetworkManager service is running, you can use the nmcli command 
+to display the state of the system's physical network interfaces, for example:
+
+# nmcli device status
+DEVICE  TYPE      STATE       
+em1     ethernet  connected   
+em2     ethernet  connected   
+lo      loopback  unmanaged   
+
+You can use the ip command to display the status of an interface, 
+for debugging, or for system tuning. For example, to display the status of all active interfaces:
+
+## ip addr show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: em1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:16:c3:33 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global em1
+    inet6 fe80::a00:27ff:fe16:c333/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+
+
+For each network interface, the output shows the current IP address, 
+and the status of the interface. 
+
+
+To display the status of a single interface such as em1, specify its name as shown here:
+
+# ip addr show dev em1
+2: em1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 08:00:27:16:c3:33 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global em1
+    inet6 fe80::a00:27ff:fe16:c333/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+       
+You can also use ip to set properties and activate a network interface. 
+The following example sets the IP address of the em2 interface and activates it:
+
+# ip addr add 10.1.1.1/24 dev em2
+# ip link set em2 up
+
+
+**Note
+You might be used to using the ifconfig command to perform these operations. 
+However, ifconfig is considered obsolete and will eventually be replaced altogether by the ip command.
+
+
+Any settings that you configure for network interfaces using ip do not persist across system reboots. 
+To make the changes permanent, set the properties in the /etc/sysconfig/network-scripts/ifcfg-interface file.
+
+Any changes that you make to an interface file in /etc/sysconfig/network-scripts do not take effect 
+until you restart the network service or bring the interface down and back up again. 
+For example, to restart the network service:
+
+# systemctl restart network
+
+To restart an individual interface, you can use the ifup or ifdown commands, 
+which invoke the script in /etc/sysconfig/network-scripts that corresponds to the interface type, for example:
+
+# ifdown em1
+# ifup em1
+Connection successfully activated 
+(D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/5)
+
+Alternatively, you can use the ip command to stop and start network activity on an interface 
+without completely tearing down and rebuilding its configuration:
+
+# ip link set em1 down
+# ip link set em1 up
+
+The ethtool utility is useful for diagnosing potentially mismatched settings that affect performance, 
+and allows you to query and set the low-level properties of a network device. 
+Any changes that you make using ethtool do not persist across a reboot. 
+To make the changes permanent, modify the settings in the device's ifcfg-interface file in /etc/sysconfig/network-scripts.
+
+For more information, see the ethtool(8), ifup(8), ip(8), and nmcli(1) manual pages
+
+
