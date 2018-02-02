@@ -1,0 +1,101 @@
+
+
+========================= Connect VM to the same dedicated firewall =============================
+
+connect VM : LAB-OEL74 and LAB-ORA-PC to have the same network
+dedicated firewall is : LAB-FIREWALL-VM
+
+
+[dom0]$ qvm-create LAB-NET-VM --net --label grey
+[dom0]$ qvm-pci -l LAB-NET-VM # to get a list of currently assigned devices
+
+[dom0]$ qvm-pci -d LAB-NET-VM 02:00.0
+
+Now we should create the Firewall VMs:
+[dom0]$ qvm-create LAB-FIREWALL-VM --proxy --label gray
+
+
+... and connect them to proper Net VMs:
+[dom0]$ qvm-prefs -s LAB-FIREWALL-VM netvm LAB-VM-NET
+
+
+And now, for any other VM, just set the appropriate Net VM (either LAB-OEL74 or LAB-ORAPC, or 'none), to get it assigned to either of the isolated
+networks, e.g.:
+[dom0]$ qvm-prefs -s LAB-OEL74 netvm LAB-VM-NET
+[dom0]$ qvm-prefs -s LAB-ORAPC netvm LAB-VM-NET
+[dom0]$ qvm-prefs -s vault netvm none
+
+
+
+
+
+============================ Enabling networking between two qubes ============================
+
+Normally any networking traffic between qubes is prohibited for security reasons. 
+However, in special situations, one might want to selectively allow specific qubes 
+to establish networking connectivity between each other. 
+
+For example, this might be useful in some development work, when one wants to test networking code, 
+or to allow file exchange between HVM domains (which do not have Qubes tools installed) 
+via SMB/scp/NFS protocols.
+
+In order to allow networking between qubes A and B follow these steps:
+In order to allow networking between
+ qubes (A) LAB-ORAPC : 10.172.2.13
+ and 
+ qubes (B) LAB-OEL74 : 10.172.2.3
+
+
+1# Make sure both A and B are connected to the same firewall vm 
+(by default all VMs use the same firewall VM).
+
+LAB-OEL74 : 10.172.2.3
+LAB-ORAPC : 10.172.2.13
+
+2# Note the Qubes IP addresses assigned to both qubes. 
+This can be done using the qvm-ls -n command, or via the Qubes Manager preferences pane for each qube.
+
+3# Start both qubes, 
+
+4# Open a terminal in the firewall VM
+In the firewall VM’s terminal enter the following iptables rule
+
+
+
+sudo iptables -I FORWARD 2 -s <IP address of A> -d <IP address of B> -j ACCEPT
+LAB-OEL74 : 10.172.2.3  (B)
+LAB-ORAPC : 10.172.2.13 (A)
+
+
+[user@sys-firewall ~]$ 
+sudo iptables -I FORWARD 2 -s <10.172.2.13> -d <10.172.2.3> -j ACCEPT
+
+
+on Target (B) : LAB-OEL74
+[user@LAB-OEL74 ~]$ sudo bash
+sudo iptables -I INPUT -s <10.172.2.13> -j ACCEPT
+
+
+Now you should be able to reach B from A
+Please test it.
+
+I===== if ok please make it persistent. =====
+
+[user@sys-firewall ~]$ sudo bash
+[root@sys-firewall user]# echo "iptables -I FORWARD 2 -s 10.137.2.13 -d 10.137.2.3 -j ACCEPT" >> /rw/config/qubes-firewall-user-script
+[root@sys-firewall user]# chmod +x /rw/config/qubes-firewall-user-script
+
+
+[user@B ~]$ sudo bash
+[root@LAB-OEL74 user(B)]# echo "iptables -I INPUT -s 10.137.2.13 -j ACCEPT" >> /rw/config/rc.local
+[root@LAB-OEL74 user(B)]# chmod +x /rw/config/rc.local
+
+
+======== to have it bi-directinnal ========
+[user@sys-firewall ~]$ sudo bash
+[root@sys-firewall user]# echo "iptables -I FORWARD 2 -s 10.137.2.3 -d 10.137.2.13 -j ACCEPT" >> /rw/config/qubes-firewall-user-script
+
+
+[user@A ~]$ sudo bash
+[root@LAB-ORAPC user(A)]# echo "iptables -I INPUT -s 10.137.2.3 -j ACCEPT" >> /rw/config/rc.local
+[root@LAB-ORAPC user(A)]# chmod +x /rw/config/rc.local
