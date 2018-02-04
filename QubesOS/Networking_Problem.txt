@@ -5,6 +5,67 @@ I need to have 2 linux HVM to be interconnected :
 MINT as : 10.137.2.18
 OEL  as : 10.137.2.19
 
+
+Preparing OEL serveur :
+
+
+Static IP
+
+sudo vi /etc/sysconfig/network-scripts/ifcfg-eth0
+
+=>
+
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=eth0
+UUID=d8445547-9501-4679-a776-5dd76e955df3
+DEVICE=eth0
+ONBOOT=yes
+IPADDR=10.137.2.32
+PREFIX=24
+GATEWAY=10.137.2.1
+DNS1=10.137.2.1
+PEERDNS=no
+PEERROUTES=no
+ZONE=public
+
+
+Check firewalld
+
+[@serveur ~]$ firewall-cmd --state
+running
+
+[m@serveur ~]$ systemctl status firewalld.service
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since dim. 2018-02-04 16:13:48 CET; 9min ago
+     Docs: man:firewalld(1)
+ Main PID: 746 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           └─746 /usr/bin/python -Es /usr/sbin/firewalld --nofork --nopid
+
+[marcus@serveur ~]$ systemctl stop firewalld.service
+[marcus@serveur ~]$ systemctl status firewalld.service
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: inactive (dead) since dim. 2018-02-04 16:24:48 CET; 1s ago
+
+
+
+
+
+
+
+
 They have the same firewall : sys-firewall
 
 
