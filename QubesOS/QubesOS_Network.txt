@@ -58,7 +58,7 @@ This can be done using the qvm-ls -n command, or via the Qubes Manager preferenc
 3# Start both qubes, 
 
 4# Open a terminal in the firewall VM
-In the firewall VM’s terminal enter the following iptables rule
+In the firewall VMâ€™s terminal enter the following iptables rule
 
 
 
@@ -99,3 +99,28 @@ I===== if ok please make it persistent. =====
 [user@A ~]$ sudo bash
 [root@LAB-ORAPC user(A)]# echo "iptables -I INPUT -s 10.137.2.3 -j ACCEPT" >> /rw/config/rc.local
 [root@LAB-ORAPC user(A)]# chmod +x /rw/config/rc.local
+
+
+
+==========================================
+
+
+https://groups.google.com/forum/#!topic/qubes-users/lA2SgPcV9fU
+
+Easiest way to perform the action on an "InterVM" ProxyVM or NetVM
+This is a part of my personal script that allows me to have an InerVM Network along with external networking available.
+I'm a developer, so I use this sort of thing for testing and more.
+Replace X with the number for the network you have, whether it's a 1/2/3/4/5/6/7/8/9/10/11/12/13 ... etc...
+
+My personal script auto detects the IPs upon boot. Then sets everything accordingly.
+
+So as you can see, it works, and I have been using this for a long time.
+
+
+#--------------------------------------------
+intervm_internalnet='10.137.X.0';
+
+# Sets iptables so that anything targeting local network can find itself. Only use for interVM machine.
+   iptables -I FORWARD 1 -i vif+ -o vif+ -s $intervm_internalnet/24 -d $intervm_internalnet/24 -m state --state NEW -p tcp -m tcp -j ACCEPT
+   iptables -I FORWARD 1 -i vif+ -o vif+ -s $intervm_internalnet/24 -d $intervm_internalnet/24 -p udp -m udp -j ACCEPT
+#--------------------------------------------
