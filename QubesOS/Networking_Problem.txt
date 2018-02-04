@@ -1,0 +1,118 @@
+
+
+I need to have 2 linux HVM to be interconnected :
+
+MINT as : 10.137.2.18
+OEL  as : 10.137.2.19
+
+They have the same firewall : sys-firewall
+
+
+
+
+
+NETWORK :
+
+on sys-firewall  :
+
+[root@sys-firewall user]# ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:16:3e:5e:6c:06 brd ff:ff:ff:ff:ff:ff
+    inet 10.137.1.8/32 brd 10.255.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::216:3eff:fe5e:6c06/64 scope link 
+       valid_lft forever preferred_lft forever
+3: vif3.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif3.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+5: vif4.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif4.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+8: vif8.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif8.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+10: vif9.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif9.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+
+
+
+
+iptables -L returns :
+
+[root@sys-firewall user]# ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:16:3e:5e:6c:06 brd ff:ff:ff:ff:ff:ff
+    inet 10.137.1.8/32 brd 10.255.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::216:3eff:fe5e:6c06/64 scope link 
+       valid_lft forever preferred_lft forever
+3: vif3.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif3.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+5: vif4.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif4.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+8: vif8.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif8.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+10: vif9.0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 32
+    link/ether fe:ff:ff:ff:ff:ff brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.1/32 scope global vif9.0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::fcff:ffff:feff:ffff/64 scope link 
+       valid_lft forever preferred_lft forever
+
+
+
+
+user@sys-firewall ~]$ sudo bash
+[root@sys-firewall user]# iptables -L
+Chain INPUT (policy DROP)
+target     prot opt source               destination         
+DROP       udp  --  anywhere             anywhere             udp dpt:bootpc
+ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+ACCEPT     icmp --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere            
+REJECT     all  --  anywhere             anywhere             reject-with icmp-host-prohibited
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination         
+ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+ACCEPT     all  --  10.137.2.19          10.137.2.18         
+ACCEPT     all  --  10.137.2.18          10.137.2.19         
+.....
+
