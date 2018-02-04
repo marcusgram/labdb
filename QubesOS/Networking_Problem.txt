@@ -8,9 +8,9 @@ OEL  as : 10.137.2.19
 
 Preparing OEL serveur :
 
-
+----------
 Static IP
-
+----------
 sudo vi /etc/sysconfig/network-scripts/ifcfg-eth0
 
 =>
@@ -39,8 +39,37 @@ PEERROUTES=no
 ZONE=public
 
 
-Check firewalld
 
+----------
+Check IP
+----------
+[m@serveur network-scripts]$ ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+       
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:16:3e:5e:6c:1e brd ff:ff:ff:ff:ff:ff
+    inet 10.137.2.32/24 brd 10.137.2.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::3558:32f6:cc1b:acd1/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+3: virbr0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN 
+    link/ether 52:54:00:b0:9e:7f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.122.1/24 brd 192.168.122.255 scope global virbr0
+       valid_lft forever preferred_lft forever
+4: virbr0-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast master virbr0 state DOWN qlen 500
+    link/ether 52:54:00:b0:9e:7f brd ff:ff:ff:ff:ff:ff
+
+
+
+---------------
+Check firewalld
+---------------
 [@serveur ~]$ firewall-cmd --state
 running
 
@@ -53,20 +82,73 @@ running
    CGroup: /system.slice/firewalld.service
            └─746 /usr/bin/python -Es /usr/sbin/firewalld --nofork --nopid
 
-[marcus@serveur ~]$ systemctl stop firewalld.service
-[marcus@serveur ~]$ systemctl status firewalld.service
+[m@serveur ~]$ systemctl stop firewalld.service
+[m@serveur ~]$ systemctl status firewalld.service
 ● firewalld.service - firewalld - dynamic firewall daemon
    Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
    Active: inactive (dead) since dim. 2018-02-04 16:24:48 CET; 1s ago
 
 
+[marcus@serveur network-scripts]$ sudo systemctl mask firewalld
+Created symlink from /etc/systemd/system/firewalld.service to /dev/null.
 
 
+Install the Iptables package:
+
+yum install -y iptables-services
 
 
+Activate the iptables and ip6tables services at boot:
+
+[marcus@serveur network-scripts]$ sudo systemctl enable iptables
+Created symlink from /etc/systemd/system/basic.target.wants/iptables.service to /usr/lib/systemd/system/iptables.service.
+
+[marcus@serveur network-scripts]$ sudo systemctl enable ip6tables
+Created symlink from /etc/systemd/system/basic.target.wants/ip6tables.service to /usr/lib/systemd/system/ip6tables.service.
+
+
+[marcus@serveur network-scripts]$ sudo systemctl start iptables
+[marcus@serveur network-scripts]$ sudo systemctl start ip6tables
+
+Go to the /etc/sysconfig directory and define your rules in the iptables, ip6tables, iptables-config and ip6tables-config files.
+
+[marcus@serveur sysconfig]$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED
+ACCEPT     icmp --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:ssh
+REJECT     all  --  anywhere             anywhere             reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+REJECT     all  --  anywhere             anywhere             reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+
+Modifi iptables to have LAB-MINT to be ACCEPTED (INPUT) on this HVM (LAB-OEL74)
+
+add in /etc/sysconfig/iptables the following :
+-A INPUT -s 10.137.2.18 -j ACCEPT
 
 
 They have the same firewall : sys-firewall
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
