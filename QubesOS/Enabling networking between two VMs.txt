@@ -1,0 +1,21 @@
+
+DREW wHITE
+
+
+
+This issue is something that I discussed with others in the past, and it's easy to do with iptables, and what one should do is create a proxy vm that talks to the firewall..
+
+But it's in itself an inter-vm connection machine. So you change the network to this one machine when you want to go intervm.
+
+
+iptables -I FORWARD 1 -i vif+ -o vif+ -s {3.4.5.0}/24 -d {3.4.5.0}/24 -m state --state NEW -p tcp -m tcp -j ACCEPT
+iptables -I FORWARD 1 -i vif+ -o vif+ -s {3.4.5.0}/24 -d {3.4.5.0}/24 -p udp -m udp -j ACCEPT
+
+{3.4.5.0} = defined location for your internal .0 ip address.
+
+This defines only send the requests to the requested internals if they are requested AND attached to the InterVM machine.
+
+I build a script to calculate everything for the interVM network and much much more on boot for an IPTABLES machine.
+Works like a charm too.
+
+InterVM works 100%, and can talk to the internet too. easy as can be.
