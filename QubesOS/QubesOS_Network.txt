@@ -124,3 +124,12 @@ intervm_internalnet='10.137.X.0';
    iptables -I FORWARD 1 -i vif+ -o vif+ -s $intervm_internalnet/24 -d $intervm_internalnet/24 -m state --state NEW -p tcp -m tcp -j ACCEPT
    iptables -I FORWARD 1 -i vif+ -o vif+ -s $intervm_internalnet/24 -d $intervm_internalnet/24 -p udp -m udp -j ACCEPT
 #--------------------------------------------
+
+
+Hello Drew 
+
+I am a newbie on Qubes using 3.2 version
+I'd like to implement network interconnect between 2 HVM centos linux.
+They are attached to the default sys-firewall.
+Centos firewall is also disabled, and iptables is configured instead and running.
+sys-firewall is also configured in /rw/config/qubes-firewall-user-script.
