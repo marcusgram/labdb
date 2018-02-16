@@ -1,0 +1,42 @@
+
+
+-- https://blogs.oracle.com/hlsu/install-docker-on-oracle-linux-7
+
+First, update your Oracle Linux 7 instance with correct yum setting. To install the latest Docker release (17.03.1.ce), you need ol7_latest, ol7_uekr4 and ol7_addons enabled.
+
+# cd /etc/yum.repos.d/
+# wget http://yum.oracle.com/public-yum-ol7.repo
+# vi public-yum-ol7.repo
+
+[ol7_latest]
+name=Oracle Linux $releasever Latest ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/latest/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+
+[ol7_UEKR4]
+name=Latest Unbreakable Enterprise Kernel Release 4 for Oracle Linux $releasever ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/UEKR4/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+
+[ol7_addons]
+name=Oracle Linux $releasever Add ons ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/addons/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+
+Next you simply use yum install to start the installation.
+
+# yum install docker-engine
+
+
+Once the installation is completed, you start the docker service.
+
+# systemctl start docker
+# systemctl enable docker
+
+=> Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.
