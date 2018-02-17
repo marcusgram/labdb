@@ -1,0 +1,24 @@
+
+
+>> create kairos <<  
+    sudo docker create -it --name=kairos5 -h kairos -p 2443:443 -p 2480:2480 -v /Users/gdsc/Documents/kairos_store/databases:/orientdb/databases -v /Users/gdsc/Documents/kairos_store/files:/orientdb/files -v /Users/gdsc/Documents/kairos_autoupload:/autoupload gdsc/kairos
+
+  104  sudo docker ps
+  106  sudo docker exec -it kairos5 bash
+  107  sudo docker ps -a
+
+>> stop all containers <<
+    sudo docker stop $(sudo docker ps -a -q)
+    sudo docker ps -a
+
+>> delete all containers <<
+    sudo docker rm $(sudo docker ps -a -q)
+    sudo docker ps -a
+
+>> create kairos container <<  
+    sudo docker create -it --name=kairos -h kairos -p 2443:443 -p 2480:2480 -v /Users/gdsc/Documents/kairos_store/databases:/orientdb/databases -v /Users/gdsc/Documents/kairos_store/files:/orientdb/files -v /Users/gdsc/Documents/kairos_autoupload:/autoupload gdsc/kairos
+  
+>> start kairos << 
+   sudo docker start kairos
+
+https://localhost:2443/
