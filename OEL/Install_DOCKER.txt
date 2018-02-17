@@ -29,14 +29,95 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
 gpgcheck=1
 enabled=1
 
-Next you simply use yum install to start the installation.
 
-# yum install docker-engine
+[ol7_optional_latest]
+name=Oracle Linux $releasever Optional Latest ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/optional/latest/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+
+=> Next you simply use yum install to start the installation.
+
+# yum install docker-engine btrfs-progs btrfs-progs-devel -y
 
 
-Once the installation is completed, you start the docker service.
 
-# systemctl start docker
-# systemctl enable docker
+----Configure BTRFS----
 
-=> Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.
+By default the containers are created under the "/var/lib/docker", so you really need to house this on a separate disk or in a separate partition, preferably using BTRFS as the file system.
+
+I have a second LUN with a device named "/dev/xvdb". I could build the file system on this disk directly, but I prefer to partition the disks with a single partition using fdisk. 
+These responses will create a new partition using the whole of the disk ("n", "p", "return", "return", "return", "w").
+
+
+----Make the BTRFS file system on the "xvdb1" partition.---- 
+
+The Oracle Linux 7 Configuring Docker Storage manual describes how to use the docker-storage-config utility to do this with a single command.
+
+# docker-storage-config -f -s btrfs -d /dev/xvdb1
+Creating 'btrfs' file system on: /dev/xvdb1
+
+-- Check /etc/fstab --
+-- We can see the file system is added to the "/etc/fstab" file and has been mounted under "/var/lib/docker" by the utility.
+
+
+more /etc/fstab
+UUID=fca6624e-077d-47ca-a9cd-b72fab1c41fd /var/lib/docker btrfs defaults 0 0 # added by docker-storage-config
+
+
+-- check /var/lib/docker --
+# df -h
+Sys. de fichiers    Taille Utilisé Dispo Uti% Monté sur
+devtmpfs              1,8G       0  1,8G   0% /dev
+tmpfs                 1,8G     19M  1,8G   1% /dev/shm
+tmpfs                 1,8G    8,8M  1,8G   1% /run
+tmpfs                 1,8G       0  1,8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root    17G    9,4G  7,7G  56% /
+/dev/xvda1           1014M    311M  704M  31% /boot
+tmpfs                 368M     20K  368M   1% /run/user/1000
+tmpfs                 368M       0  368M   0% /run/user/0
+/dev/xvdb1             31G     17M   30G   1% /var/lib/docker
+
+
+
+
+--- Finish Docker Setup ---
+
+-- Enable and start the Docker service. --
+
+# systemctl enable docker.service
+=> Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service
+
+# systemctl start docker.service
+
+# systemctl status docker.service
+Active: active (running) since sam. 2018-02-17 17:12:53 CET; 13s ago
+
+
+-- Get information about docker using the following commands.
+
+# docker info
+
+# docker version
+
+
+
+
+
+
+
+Docker Commands as Non-Root User
+
+Docker commands run as the "root" user. You have three choices when if comes to running docker commands.
+
+    Run the docker commands from the root user.
+    Allow another user to perform "sudo" on the docker command, so all commands are run using "sudo docker ...".
+    Create a group called docker and assign that to the user you want to run docker commands from. The documentation says, "Warning: The docker group grants privileges equivalent to the root user", so we should avoid this.
+
+In this case we want to run the docker commands from a user called "docker_user", so we add an entry in the "/etc/sudoers" file and use an alias in the user's ".bash_profile" file so we don't have to keep typing the "sudo" command.
+
+# useradd docker_user
+# echo "docker_user  ALL=(ALL)  NOPASSWD: /usr/bin/docker" >> /etc/sudoers
+# echo "alias docker=\"sudo /usr/bin/docker\"" >> /home/docker_user/.bash_profile
+# su - docker_user
