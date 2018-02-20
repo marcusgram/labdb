@@ -1,0 +1,7 @@
+
+docker ps
+docker stop $(docker ps -a -q)
+docker ps
+docker rm $(docker ps -a -q)
+docker images
+
