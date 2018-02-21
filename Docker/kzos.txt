@@ -22,3 +22,13 @@
    sudo docker start kairos
 
 https://localhost:2443/
+
+
+
+
+
+-------
+
+  sudo docker create -it --name=kairos9000 -h kairos -p 9000:443 -p 2483:2480 -v /Users/gdsc/Documents/kairos_store/databases:/orientdb/databases -v /Users/gdsc/Documents/kairos_store/files:/orientdb/files -v /Users/gdsc/Documents/kairos_autoupload:/autoupload gdsc/kairos
+
+https://hub.docker.com/r/tutum/hello-world/
