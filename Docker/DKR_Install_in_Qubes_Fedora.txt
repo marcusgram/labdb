@@ -1,0 +1,33 @@
+
+
+
+----------------------------------------------------------
+How to made an app-vm that has a website running in docker 
+and reachable by everything connected to sys-firewall.
+----------------------------------------------------------
+
+1) install docker in fedora-24, dnf install docker
+
+
+2) create the new appvm, I called it 'docker'
+
+3) in that app-vm in /rw/config/rc.local, i put:
+
+rm -rf /var/lib/docker
+ln -s /home/user/docker /var/lib/docker
+systemctl start docker
+
+, and I made the dir in /home/user/docker
+now as root i can use 'docker ps' and everything.
+
+
+4) networking, making 'docker' visible:
+   on docker app-vm in /rw/config/qubes-firewall-user-script, i put:
+
+iptables -I INPUT -s 10.137.2.0/24 -j ACCEPT
+
+   on sys-firewall, in /rw/config/qubes-firewall-user-script, i put:
+
+iptables -I FORWARD 2 -s 10.137.2.0/24 -d $(docker-appvm-ip) -j ACCEPT
+
+Ok, that's all i have on docker, and it works great.
