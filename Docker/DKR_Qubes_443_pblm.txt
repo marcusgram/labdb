@@ -1,0 +1,30 @@
+
+
+---------------------------------------------------------
+--- Cannot connect to HTTPS (443) from a docker image ---
+---------------------------------------------------------
+
+https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/issues/241
+
+# Test
+curl https://www.google.com
+=> curl: (7) Failed to connect to www.google.com port 443: Connection refused
+
+curl -V https://www.google.com
+curl -v --ipv4 -I https://www.google.com
+curl https://github.com -kI --sslv3 -v
+
+
+
+
+# expose both HTTP and HTTPS ports, 
+# since nginx reverse proxy configured to server only HTTPS traffic
+docker run -d -p 80:80 -p 443:443 nginx-container
+
+I found the source of the problem. 
+Here it was related to an iptables issue of the main host
+
+with the command : 
+iptables -L -t nat 
+=> I discovered that there was a pre-routing activated on all https traffic redirected to the port 9092, 
+used by another service.
